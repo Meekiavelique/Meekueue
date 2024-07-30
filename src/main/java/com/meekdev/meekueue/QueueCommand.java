@@ -21,7 +21,7 @@ public class QueueCommand implements SimpleCommand {
     public void execute(Invocation invocation) {
         // Check if the player has the necessary permission
         if (!invocation.source().hasPermission("meekueue.admin")) {
-            invocation.source().sendMessage(Component.text("You don't have permission to use this command.", NamedTextColor.RED));
+            invocation.source().sendMessage(Component.text("&4⚠ &l︲&r&4ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴘᴇʀᴍɪѕѕɪᴏɴ ᴛᴏ ᴜѕᴇ ᴛʜɪѕ ᴄᴏᴍᴍᴀɴᴅ !", NamedTextColor.RED));
             return;
         }
 
