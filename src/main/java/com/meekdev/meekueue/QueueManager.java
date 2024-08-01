@@ -16,8 +16,8 @@ public class QueueManager {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final ScheduledExecutorService positionUpdater = Executors.newScheduledThreadPool(1);
 
-    private static final long RETRY_DELAY = 10; // 10 seconds between each attempt
-    private static final long UPDATE_INTERVAL = 1; // 1 second interval for position updates
+    private static final long RETRY_DELAY = 4; // 4 seconds between each attempt
+    private static final long UPDATE_INTERVAL = 4; // 4 seconds interval for position updates
 
     public QueueManager(Meekueue plugin) {
         this.plugin = plugin;
@@ -35,12 +35,19 @@ public class QueueManager {
 
     public void addToQueue(Player player) {
         UUID playerId = player.getUniqueId();
-        if (enabled && !queue.contains(player) && !connecting.contains(playerId)) {
+        if (enabled && !queue.contains(player) && !connecting.contains(playerId) && !isPlayerOnMainServer(player)) {
             queue.offer(player);
             updatePlayerPosition(player);
-            player.sendMessage(Component.text("Vous avez été ajouté à la file d'attente."));
             plugin.getLogger().info(player.getUsername() + " ajouté à la file d'attente.");
+        } else if (isPlayerOnMainServer(player)) {
+            removeFromQueue(player);
         }
+    }
+
+    private boolean isPlayerOnMainServer(Player player) {
+        return player.getCurrentServer()
+                .map(server -> server.getServerInfo().getName().equalsIgnoreCase("main"))
+                .orElse(false);
     }
 
     public void removeFromQueue(Player player) {
@@ -58,15 +65,22 @@ public class QueueManager {
         }
 
         Player player = queue.peek();
-        if (player != null && !connecting.contains(player.getUniqueId())) {
-            moveToMainServer(player);
+        if (player != null) {
+            if (isPlayerOnMainServer(player)) {
+                removeFromQueue(player);
+                processQueue(); // Process next player
+            } else if (!connecting.contains(player.getUniqueId()) && player.isActive()) {
+                moveToMainServer(player);
+            } else if (!player.isActive()) {
+                removeFromQueue(player);
+                processQueue(); // Process next player
+            }
         }
     }
 
     private void moveToMainServer(Player player) {
         UUID playerId = player.getUniqueId();
         connecting.add(playerId);
-
 
         if (whitelist.contains(playerId)) {
             plugin.getLogger().info(player.getUsername() + " est sur la liste blanche et tente de rejoindre le serveur principal.");
@@ -75,23 +89,11 @@ public class QueueManager {
             Optional<RegisteredServer> mainServer = plugin.getServer().getServer("main");
             if (mainServer.isPresent()) {
                 plugin.getLogger().info(player.getUsername() + " tente de rejoindre le serveur principal.");
-                player.createConnectionRequest(mainServer.get()).connectWithIndication().thenAccept(success -> {
-                    if (success) {
-                        plugin.getLogger().info(player.getUsername() + " déplacé vers le serveur principal.");
-                        queue.remove(player);
-                        connecting.remove(playerId);
-                        updateAllPlayerPositions();
-                    } else {
-                        plugin.getLogger().warn(player.getUsername() + " n'a pas pu rejoindre le serveur principal.");
-                        scheduler.schedule(() -> {
-                            connecting.remove(playerId);
-                            processQueue();
-                        }, RETRY_DELAY, TimeUnit.SECONDS);
-                    }
-                });
+                attemptConnection(player, mainServer.get());
             } else {
                 plugin.getLogger().error("Le serveur principal n'est pas disponible.");
                 connecting.remove(playerId);
+                scheduler.schedule(() -> processQueue(), RETRY_DELAY, TimeUnit.SECONDS);
             }
         }
     }
@@ -99,24 +101,35 @@ public class QueueManager {
     private void moveToServer(Player player, String serverName) {
         Optional<RegisteredServer> server = plugin.getServer().getServer(serverName);
         if (server.isPresent()) {
-            player.createConnectionRequest(server.get()).connectWithIndication().thenAccept(success -> {
-                if (success) {
-                    plugin.getLogger().info(player.getUsername() + " déplacé vers le serveur " + serverName + ".");
-                    queue.remove(player);
-                    connecting.remove(player.getUniqueId());
-                    updateAllPlayerPositions();
-                } else {
-                    plugin.getLogger().warn(player.getUsername() + " n'a pas pu rejoindre le serveur " + serverName + ".");
-                    scheduler.schedule(() -> {
-                        connecting.remove(player.getUniqueId());
-                        processQueue();
-                    }, RETRY_DELAY, TimeUnit.SECONDS);
-                }
-            });
+            attemptConnection(player, server.get());
         } else {
             plugin.getLogger().error("Le serveur " + serverName + " n'est pas disponible.");
             connecting.remove(player.getUniqueId());
+            scheduler.schedule(() -> processQueue(), RETRY_DELAY, TimeUnit.SECONDS);
         }
+    }
+
+    private void attemptConnection(Player player, RegisteredServer server) {
+        UUID playerId = player.getUniqueId();
+        player.createConnectionRequest(server).connectWithIndication().thenAccept(success -> {
+            if (success) {
+                plugin.getLogger().info(player.getUsername() + " déplacé vers le serveur " + server.getServerInfo().getName() + ".");
+                queue.remove(player);
+                connecting.remove(playerId);
+                updateAllPlayerPositions();
+            } else {
+                plugin.getLogger().warn(player.getUsername() + " n'a pas pu rejoindre le serveur " + server.getServerInfo().getName() + ". Nouvelle tentative dans " + RETRY_DELAY + " secondes.");
+                scheduler.schedule(() -> {
+                    if (player.isActive() && queue.contains(player)) {
+                        attemptConnection(player, server);
+                    } else {
+                        connecting.remove(playerId);
+                        queue.remove(player);
+                        processQueue();
+                    }
+                }, RETRY_DELAY, TimeUnit.SECONDS);
+            }
+        });
     }
 
     private void updatePlayerPosition(Player player) {
@@ -132,22 +145,10 @@ public class QueueManager {
         }
     }
 
-    private void processNextPlayer() {
-        if (!enabled || queue.isEmpty()) {
-            return;
-        }
-
-        Player player = queue.peek(); // Use peek() instead of poll()
-        if (player != null) {
-            plugin.getLogger().info(player.getUsername() + " tente de rejoindre le serveur principal.");
-            moveToMainServer(player);
-        }
-    }
-
     public void toggleQueue(boolean enabled) {
         this.enabled = enabled;
         if (enabled) {
-            processNextPlayer();
+            processQueue();
         }
     }
 
