@@ -43,17 +43,17 @@ public class Meekueue {
         String fullVersion = server.getVersion().toString();
         String versionNumber = extractVersionNumber(fullVersion);
 
-
-        server.getEventManager().register(this, new QueueListener(queueManager));
+        server.getEventManager().register(this, new QueueListener(queueManager, this));
         server.getCommandManager().register("queue", new QueueCommand(queueManager, this));
-        logger.info(ANSI_WHITE + "▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁" + ANSI_RESET);
+
+        logger.info(ANSI_WHITE + "▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁" + ANSI_RESET);
         logger.info(" ");
-        logger.info("             [" + ANSI_ORANGE + "Meekueue " + ANSI_RESET + "Velocity]           ");
-        logger.info(String.format(ANSI_RESET + "The plugin is initiated running on version " + ANSI_ORANGE + Meekueue.VERSION + ANSI_RESET));
-        logger.info((ANSI_RESET + "Velocity Version : " + ANSI_ORANGE + versionNumber) + ANSI_RESET);
-        logger.info("Github : https://github.com/Meekiavelique/Meekueue");
+        logger.info("                 [" + ANSI_ORANGE + "Meekueue " + ANSI_RESET + "Velocity]           ");
+        logger.info(String.format(ANSI_RESET + "  The plugin is initiated running on version " + ANSI_ORANGE + Meekueue.VERSION + ANSI_RESET));
+        logger.info((ANSI_RESET + "   Version : " + ANSI_ORANGE + versionNumber) + ANSI_RESET);
+        logger.info("  Github : https://github.com/Meekiavelique/Meekueue");
         logger.info(" ");
-        logger.info("▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁");
+        logger.info("▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁");
     }
     private String extractVersionNumber(String fullVersion) {
         String[] parts = fullVersion.split(" ");
