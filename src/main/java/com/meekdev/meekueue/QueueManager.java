@@ -134,13 +134,21 @@ public class QueueManager {
 
     private void updatePlayerPosition(Player player) {
         int position = new ArrayList<>(queue).indexOf(player) + 1;
-        player.sendMessage(Component.text("§6ᴠᴏᴜѕ ᴇᴛᴇѕ ᴇɴ ᴘᴏѕɪᴛɪᴏɴ §r§f" + position + "§6 ᴅᴀɴѕ ʟᴀ ꜰɪʟᴇ ᴅ'ᴀᴛᴛᴇɴᴛᴇ"));
+        if (position == 1) {
+            player.sendMessage(Component.text("§6ᴠᴏᴜѕ ᴇᴛᴇѕ ᴇɴ ᴘᴏѕɪᴛɪᴏɴ§r§f 1ᴇʀ§6 ᴅᴀɴѕ ʟᴀ ꜰɪʟᴇ ᴅ'ᴀᴛᴛᴇɴᴛᴇ"));
+        } else {
+            player.sendMessage(Component.text("§6ᴠᴏᴜѕ ᴇᴛᴇѕ ᴇɴ §r§f" + position + "§6ᴇ ᴘᴏѕɪᴛɪᴏɴ ᴅᴀɴѕ ʟᴀ ꜰɪʟᴇ ᴅ'ᴀᴛᴛᴇɴᴛᴇ"));
+        }
     }
 
     private void updateAllPlayerPositions() {
         int position = 1;
         for (Player player : queue) {
-            player.sendMessage(Component.text("§6ᴠᴏᴜѕ ᴇᴛᴇѕ ᴇɴ ᴘᴏѕɪᴛɪᴏɴ §r§f" + position + "§6 ᴅᴀɴѕ ʟᴀ ꜰɪʟᴇ ᴅ'ᴀᴛᴛᴇɴᴛᴇ"));
+            if (position == 1) {
+                player.sendMessage(Component.text("§6ᴠᴏᴜѕ ᴇᴛᴇѕ ᴇɴ ᴘᴏѕɪᴛɪᴏɴ§r§f 1ᴇʀ§6 ᴅᴀɴѕ ʟᴀ ꜰɪʟᴇ ᴅ'ᴀᴛᴛᴇɴᴛᴇ"));
+            } else {
+                player.sendMessage(Component.text("§6ᴠᴏᴜѕ ᴇᴛᴇѕ ᴇɴ §r§f" + position + "§6ᴇ ᴘᴏѕɪᴛɪᴏɴ ᴅᴀɴѕ ʟᴀ ꜰɪʟᴇ ᴅ'ᴀᴛᴛᴇɴᴛᴇ"));
+            }
             position++;
         }
     }
