@@ -6,12 +6,17 @@
 - Admin commands to control the queue
 - Real-time queue position updates for players
 - Configurable retry delay for connection attempts
+  
 ### TODO
 - Punishing players in the queue, slurs in the waiting server make them down the queue for example
 - Adding proxied server wide PlaceHolders
 - Custom screens using ItemsAdder to show black screen with the position queue
 - A configuration file to and a reload command to change values without editing the code
-- Queue list in order in a Minecraft
+- Queue list in order in a Minecraft gui with players heads
+- Reload command
+- Paper version of this plugin for more configuration and easier functionnalities
+- Web api to make easier Skript use
+  
 ## Installation
 
 1. Download the latest version of Meekueue from the [releases page](https://github.com/Meekiavelique/Meekueue/releases).
