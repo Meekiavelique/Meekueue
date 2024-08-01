@@ -16,7 +16,7 @@
 - Reload command
 - Paper version of this plugin for more configuration and easier functionnalities
 - Web api to make easier Skript use
-- 
+  
 ## Installation
 
 1. Download the latest version of Meekueue from the [releases page](https://github.com/Meekiavelique/Meekueue/releases).
