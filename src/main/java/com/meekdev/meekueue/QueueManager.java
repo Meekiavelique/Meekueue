@@ -2,7 +2,10 @@ package com.meekdev.meekueue;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
+import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import net.kyori.adventure.text.Component;
+import com.google.gson.Gson;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -16,8 +19,8 @@ public class QueueManager {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final ScheduledExecutorService positionUpdater = Executors.newScheduledThreadPool(1);
 
-    private static final long RETRY_DELAY = 4; // 4 seconds between each attempt
-    private static final long UPDATE_INTERVAL = 4; // 4 seconds interval for position updates
+    private static final long RETRY_DELAY = 4;
+    private static final long UPDATE_INTERVAL = 4;
 
     public QueueManager(Meekueue plugin) {
         this.plugin = plugin;
@@ -68,12 +71,12 @@ public class QueueManager {
         if (player != null) {
             if (isPlayerOnMainServer(player)) {
                 removeFromQueue(player);
-                processQueue(); // Process next player
+                processQueue();
             } else if (!connecting.contains(player.getUniqueId()) && player.isActive()) {
                 moveToMainServer(player);
             } else if (!player.isActive()) {
                 removeFromQueue(player);
-                processQueue(); // Process next player
+                processQueue();
             }
         }
     }
@@ -142,6 +145,24 @@ public class QueueManager {
         for (Player player : queue) {
             player.sendMessage(Component.text("§6ᴠᴏᴜѕ ᴇᴛᴇѕ ᴇɴ ᴘᴏѕɪᴛɪᴏɴ §r§f" + position + "§6 ᴅᴀɴѕ ʟᴀ ꜰɪʟᴇ ᴅ'ᴀᴛᴛᴇɴᴛᴇ"));
             position++;
+        }
+        sendQueuePositions();
+    }
+
+    private void sendQueuePositions() {
+        Map<String, Integer> positions = new HashMap<>();
+        int position = 1;
+        for (Player player : queue) {
+            positions.put(player.getUsername(), position);
+            position++;
+        }
+
+        String json = new Gson().toJson(positions);
+
+        MinecraftChannelIdentifier channel = MinecraftChannelIdentifier.from("meekueue:queue_positions");
+
+        for (RegisteredServer server : plugin.getServer().getAllServers()) {
+            server.sendPluginMessage(channel, json.getBytes());
         }
     }
 

@@ -5,6 +5,7 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import org.slf4j.Logger;
 
 @Plugin(
@@ -45,6 +46,7 @@ public class Meekueue {
 
         server.getEventManager().register(this, new QueueListener(queueManager, this));
         server.getCommandManager().register("queue", new QueueCommand(queueManager, this));
+        server.getChannelRegistrar().register(MinecraftChannelIdentifier.from("meekueue:queue_positions"));
 
         logger.info(ANSI_WHITE + "▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁" + ANSI_RESET);
         logger.info(" ");
